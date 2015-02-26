@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!--meta http-equiv="X-UA-Compatible" content="IE=7" /-->
+<meta http-equiv="cache-control" content="no-cache" />
+<meta charset="utf-8" />
+
+<title>グラフ表示テスト</title>
+
+<script type="text/ecmascript" src="/js/jquery-1.11.2.min.js"></script> 
+
+<script language="javascript" type="text/javascript" src="/js/jquery.jqplot.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.barRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.json2.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/jquery.jqplot.min.css" />
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $.ajax({
+    type: 'GET',
+    url: '/jqplottest/',
+    dataType: 'json',
+    async: false,
+    success: function(data, textStatus) {
+ //       $("p").text("Data Success: " + JSON.parse(data));
+ //$("p").text(JSON.parse(data));
+        var line1 = data.rainList;
+        var xticks = [[0, '12時'], [1, '13時'], [2, '14時'], [3, '15時'], [4, '16時'], [5, '17時'], [6, '18時']];
+        var yticks =  [0, 25, 50, 75, 100];
+        var jqplot = $.jqplot('plotGraf', [line1], {
+            legend: {show:true}, 
+            title: '2010/01/01',
+            grid: {background:'#f3f3f3', gridLineColor:'#accf9b'},
+            series: [
+                {label:'降水確率', markerOptions:{style:'circle'}, yaxis:'yaxis'}
+            ],
+            axes: {
+                xaxis:{ticks:xticks}, 
+                yaxis:{ticks:yticks, tickOptions:{formatString:'%d%'}}
+            }
+        });
+    },
+    error: function() {
+        console.log('error');
+    }
+  });
+});
+</script>
+</head>
+
+<body>
+<div id="plotGraf" style="height: 300px; width: 300px;"></div>
+<p></p>
+</body>
+</html>

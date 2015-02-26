@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8">
+		<title>D3: Dynamic axes generated based on min/max values of randomized data</title>
+
+		<script type="text/javascript" src="/js/jquery-1.11.2.min.js"></script>
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="/js/bootstrap.min.js"></script>
+
+		<script type="text/javascript" src="/js/d3.min.js"></script>
+	
+		
+		<style type="text/css">
+			
+			#content{
+				width:1000px;
+				margin:auto;
+			}
+			text{
+				font-family:'ヒラギノ角ゴ ProN W3', 'Hiragino Kaku Gothic ProN', 'メイリオ', 'Meiryo', 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+				color:#666;
+				font-size:12px;
+			}
+
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: black;
+				shape-rendering: crispEdges;
+			}
+			
+			.axis text {
+				font-size: 11px;
+			}
+
+			#yearlist{
+				margin:10px 10px 10px 50px;
+			}
+
+			h2 {
+				margin:20px 0 0 50px;
+			}
+
+			#copy {
+				margin:20px 0  0 0;
+				text-align: right;
+			}
+		</style>
+
+</head>
+<body>
+	<div id="content">
+<!-- Standard button -->
+	<div id="yearlist">
+		<button type="button" class="btn btn-default" data-no="0" id="bt">2010年</button>
+		<button type="button" class="btn btn-default" data-no="1" id="bt">2015年</button>
+		<button type="button" class="btn btn-default" data-no="2" id="bt">2020年</button>
+		<button type="button" class="btn btn-default" data-no="3" id="bt">2025年</button>
+		<button type="button" class="btn btn-default" data-no="4" id="bt">2030年</button>
+		<button type="button" class="btn btn-default" data-no="3" id="bt">2035年</button>
+		<button type="button" class="btn btn-default" data-no="4" id="bt">2040年</button>
+	</div>
+
+	<h2>2010年</h2>
+
+	<svg></svg>
+
+	<script type="text/javascript">
+
+
+	// Width and height
+	var w = 1000;
+	var h = 600;
+	var padding = 50; //グラフ内の余白
+
+	var nvdataset = [];
+  var dataset = [];
+
+	// Create SVG element
+	var svg = d3.select("body svg")
+					.attr("width",w)
+					.attr("height",h);
+
+
+		var xScale;
+		var yScale;
+		var rScale;
+		var xAxis;
+		var yAxis;
+
+
+		// カテゴリーカラー
+		// https://github.com/mbostock/d3/wiki/ordinal-Scales
+		// ランダムに50色のカラーリストを作成する
+		// カラーが足らないので連結して作成する。
+		var color =d3.scale.category20b();
+		var color2 = d3.scale.category20();
+		var cl = color.range();
+		var colorList = cl.concat(color2.range());
+
+
+	$(function(){
+
+			// Data Set
+			setData();
+
+		// 描画元データの格納
+		dataset = nvdataset[0].data
+
+	
+
+			updateData();
+
+
+		 d3.select("body").selectAll("#bt")
+				.on("click",function() {
+
+						// 表示している年度の設定
+						d3.selectAll("h2").text(d3.select(this).text());
+
+						var DataNo = d3.select(this).attr("data-no");
+
+						// 描画元データの格納
+						dataset = nvdataset[DataNo].data;
+
+
+						scalexx();
+
+						// Create circles
+						// 人口を示す円を描く
+						svg.selectAll("circle")			// circleは存在しないが、選択する
+								.data(dataset)					// データを１つずつ処理
+				        .transition()							// アニメーション
+				        .delay(function(d, i) {		// １つずつ遅延させる
+				              return i * 200;
+				          })
+				        .duration(3000)						// 変化にかかる時間
+								.attr("cx",function(d){ // 円の中心 X座標
+									return xScale(d.density);
+								})
+								.attr("cy",function(d) {　　// 円の中心 Y座標
+									return yScale(d.workingage);
+								})
+							.attr("fill",function(d,i){
+									return colorList[i];				// fill 塗り
+								})
+								.attr("fill-opacity","0.7")
+								.attr("r",function(d){						// 円を描画
+									return rScale(d.population);   	// 半径を設定
+								})
+
+ 							// Create labels
+								svg.selectAll("text")	// 地域名
+									.data(dataset)
+					        .transition()							// アニメーション
+					        .delay(function(d, i) {		// １つずつ遅延させる
+					              return i * 200;
+					          })
+					        .duration(3000)						// 変化にかかる時間
+									.attr("x",function(d) {
+										return xScale(d.density);
+									})
+									.attr("y",function(d) {
+										return yScale(d.workingage);
+									})
+				});
+
+
+
+				// .datum(function(d){
+				// 	var data = 
+				// 			{"area":d.area,
+				// 			"population":d.population,
+				// 			"density":d.density,
+				// 			"workingage":d.workingage};
+				// 	return data;
+				// });
+
+
+
+			
+	});
+
+
+function scalexx(){
+
+
+		// Create scale functions
+		// 目盛を作成する。
+		// https://github.com/mbostock/d3/wiki/Quantitative-Scales
+
+		// linear （直線的）
+		// x軸：人口密度
+		xScale = d3.scale.linear()  // 目盛の種類
+								// 入力ドメイン  density　人口密度
+								// .domain([
+								// 	d3.min(dataset,function(d){ // アクセッサ関数
+								// 		return d.density - padding * 2;
+								// 	}),
+								// 	d3.max(dataset,function(d){
+								// 		return d.density;		 
+								// 	})
+								// ])
+								.domain([
+									0,
+									6000
+								])
+
+								// 出力レンジ
+								// 20 から　幅（余白あり）まで
+								.range([padding,w]);
+
+		// Y軸：平均年齢
+		yScale = d3.scale.linear()  // 目盛の種類
+								// 入力ドメイン  workingage 平均年齢
+								// .domain([
+								// 	d3.min(dataset,function(d){ 
+								// 		return d.workingage-0.3;	// 位置調整している。 
+								// 	}),
+								// 	d3.max(dataset,function(d){ 
+								// 		return d.workingage; 
+								// 	})
+								// ])
+								.domain([
+									40,
+									80
+								])
+
+								.range([h - padding,20]);
+
+		// バブルチャートの円の半径：人口
+		rScale = d3.scale.linear()  // 目盛の種類
+								.domain([
+										d3.min(dataset,function(d){
+										 return d.population; 
+										}),
+										d3.max(dataset,function(d){
+										 return d.population; 
+										})])
+								.range([5,50]);
+
+		// Define X axis
+		// X軸ｊの定義
+		xAxis = d3.svg.axis()　　　　// 目盛を生成
+							.scale(xScale)　　　　　// スケールを適用
+							.orient("bottom")　　　// 目盛の表示位置
+							.ticks(15);						// 目盛の個数
+
+		// Define Y axis
+		// Y軸ｊの定義
+		yAxis = d3.svg.axis()　　　　// 目盛を生成
+								.scale(yScale)　　　// スケールを適用
+								.orient("left")　　// 目盛の表示位置
+								.ticks(10);				// 目盛の個数
+
+
+}
+
+
+	function updateData(){
+
+
+		scalexx();
+
+
+		// Create circles
+		// 人口を示す円を描く
+		svg.selectAll("circle")			// circleは存在しないが、選択する
+				.data(dataset)					// データを１つずつ処理
+				.enter()								// 描画されてなければ、追加
+				.append("circle")   		// SVG:circle
+				.attr("cx",function(d){ // 円の中心 X座標
+					return xScale(d.density);
+				})
+				.attr("cy",function(d) {　　// 円の中心 Y座標
+					return yScale(d.workingage);
+				})
+				.attr("r",0)							// 半径をなくして、見えなくする。
+        .transition()							// アニメーション
+        .delay(function(d, i) {		// １つずつ遅延させる
+              return i * 200;
+          })
+        .duration(3000)						// 変化にかかる時間
+        .ease("bounce")						// 変化の種類
+				.attr("fill",function(d,i){
+					return colorList[i];				// fill 塗り
+				})
+				.attr("fill-opacity","0.7")
+				.attr("r",function(d){						// 円を描画
+					return rScale(d.population);   	// 半径を設定
+				})
+
+		svg.selectAll("circle")					
+				.on("mouseover",function() {
+					//　
+					d3.select(this)
+						.attr("stroke","black")
+						.attr("stroke-width","2")
+						.attr("fill-opacity","1");
+				})
+				.on("mouseout",function() {
+					// 
+					d3.select(this)
+						.attr("stroke","")
+						.attr("fill-opacity","0.7");
+				});
+
+
+		// Create labels
+		svg.selectAll("text")	// 地域名
+			.data(dataset)
+			.enter()
+			.append("text")
+			.text(function(d) {
+				return d.area;　//　区市町名
+			})
+			.attr("x",function(d) {
+				return xScale(d.density);
+			})
+			.attr("y",function(d) {
+				return yScale(d.workingage);
+			})
+
+
+	 // Create X axis　X軸目盛
+	 svg.append("g")
+	 	.attr("class","axis x")
+		.attr("transform","translate(0," + (h - padding) + ")")
+	 	.call(xAxis);
+
+	 	// Create Y axis　　Y軸目盛
+	 	svg.append("g")
+	 		.attr("class","axis y")
+	 		.attr("transform","translate(" + padding + ",0)")
+	 		.call(yAxis);
+
+	 	// 軸のラベル単位を追加
+		d3.select(".x.axis")
+		  .append("text")
+		  .text("人口密度(1ｋ㎡当たり)")
+		  .attr("x", w/2)
+		  .attr("y", 40)
+
+		d3.select(".y.axis")
+		  .append("text")
+		  .text("生")
+		  .attr("x", -45)
+		  .attr("y", h/2)
+
+		d3.select(".y.axis")
+		  .append("text")
+		  .text("産")
+		  .attr("x", -45)
+		  .attr("y", h/2+15)
+
+		d3.select(".y.axis")
+		  .append("text")
+		  .text("年")
+		  .attr("x", -45)
+		  .attr("y", h/2+30)
+
+		d3.select(".y.axis")
+		  .append("text")
+		  .text("齢")
+		  .attr("x", -45)
+		  .attr("y", h/2+45)
+		};
+
+
+		// 広島県データ
+		function setData(){
+			nvdataset = [
+{"year":"2010","data":[{"area":"安芸太田町","population":7255,"density":21,"workingage":45.79},{"area":"安芸区","population":78789,"density":838,"workingage":64.16},{"area":"安佐北区","population":149633,"density":423,"workingage":62.63},{"area":"安佐南区","population":233733,"density":1994,"workingage":65.33},{"area":"江田島市","population":27031,"density":268,"workingage":55.1},{"area":"大竹市","population":28836,"density":367,"workingage":59.73},{"area":"尾道市","population":145202,"density":510,"workingage":57.75},{"area":"海田町","population":28475,"density":2062,"workingage":65.44},{"area":"北広島町","population":19969,"density":31,"workingage":53.05},{"area":"熊野町","population":24533,"density":730,"workingage":59.32},{"area":"呉市","population":239973,"density":678,"workingage":58.77},{"area":"坂町","population":13262,"density":846,"workingage":59.78},{"area":"庄原市","population":40244,"density":32,"workingage":51.53},{"area":"世羅町","population":17549,"density":63,"workingage":52.81},{"area":"竹原市","population":28644,"density":242,"workingage":55.69},{"area":"西区","population":186985,"density":5242,"workingage":67.25},{"area":"廿日市市","population":114038,"density":233,"workingage":63.31},{"area":"東区","population":120751,"density":3066,"workingage":64.45},{"area":"東広島市","population":190135,"density":299,"workingage":66.65},{"area":"福山市","population":461357,"density":890,"workingage":62.45},{"area":"府中市","population":42563,"density":217,"workingage":57.07},{"area":"府中町","population":50442,"density":4827,"workingage":64.92},{"area":"南区","population":138190,"density":5297,"workingage":66.34},{"area":"三原市","population":100509,"density":213,"workingage":58.93},{"area":"三次市","population":56605,"density":73,"workingage":55.5},{"area":"安芸高田市","population":31487,"density":59,"workingage":53.63},{"area":"佐伯区","population":135280,"density":603,"workingage":65.4},{"area":"神石高原町","population":10350,"density":27,"workingage":46.12},{"area":"大崎上島町","population":8448,"density":195,"workingage":49.21},{"area":"中区","population":130482,"density":8506,"workingage":67.67}]},
+{"year":"2015","data":[{"area":"安芸太田町","population":6371,"density":19,"workingage":42.91},{"area":"安芸区","population":80388,"density":855,"workingage":60.11},{"area":"安佐北区","population":147063,"density":416,"workingage":56.97},{"area":"安佐南区","population":245488,"density":2094,"workingage":62.05},{"area":"江田島市","population":24395,"density":242,"workingage":50.52},{"area":"大竹市","population":27361,"density":348,"workingage":55.88},{"area":"尾道市","population":138897,"density":488,"workingage":54.54},{"area":"海田町","population":27854,"density":2017,"workingage":62.25},{"area":"北広島町","population":18891,"density":29,"workingage":50.64},{"area":"熊野町","population":23818,"density":708,"workingage":53.92},{"area":"呉市","population":227459,"density":643,"workingage":55.53},{"area":"坂町","population":13249,"density":846,"workingage":56.6},{"area":"庄原市","population":37338,"density":30,"workingage":48.56},{"area":"世羅町","population":16324,"density":59,"workingage":49.54},{"area":"竹原市","population":26687,"density":226,"workingage":51.62},{"area":"西区","population":188717,"density":5291,"workingage":63.94},{"area":"廿日市市","population":111722,"density":228,"workingage":58.94},{"area":"東区","population":120279,"density":3054,"workingage":60.99},{"area":"東広島市","population":193051,"density":304,"workingage":63.64},{"area":"福山市","population":457491,"density":883,"workingage":58.72},{"area":"府中市","population":40030,"density":205,"workingage":53.52},{"area":"府中町","population":49779,"density":4764,"workingage":62.04},{"area":"南区","population":138209,"density":5297,"workingage":63.01},{"area":"三原市","population":96425,"density":205,"workingage":55.26},{"area":"三次市","population":53931,"density":69,"workingage":52.42},{"area":"安芸高田市","population":29676,"density":55,"workingage":50.3},{"area":"佐伯区","population":136467,"density":608,"workingage":60.54},{"area":"神石高原町","population":9236,"density":24,"workingage":43.41},{"area":"大崎上島町","population":7554,"density":174,"workingage":45.43},{"area":"中区","population":131247,"density":8556,"workingage":63.15}]},
+{"year":"2020","data":[{"area":"安芸太田町","population":5605,"density":16,"workingage":40.68},{"area":"安芸区","population":80747,"density":859,"workingage":58.82},{"area":"安佐北区","population":143021,"density":405,"workingage":54.17},{"area":"安佐南区","population":252883,"density":2158,"workingage":61.48},{"area":"江田島市","population":22129,"density":219,"workingage":48.49},{"area":"大竹市","population":25867,"density":329,"workingage":53.91},{"area":"尾道市","population":132188,"density":464,"workingage":53.09},{"area":"海田町","population":27221,"density":1971,"workingage":60.81},{"area":"北広島町","population":17732,"density":27,"workingage":49.75},{"area":"熊野町","population":22944,"density":682,"workingage":52.77},{"area":"呉市","population":215077,"density":608,"workingage":54.82},{"area":"坂町","population":13126,"density":838,"workingage":56.32},{"area":"庄原市","population":34492,"density":28,"workingage":46.75},{"area":"世羅町","population":15168,"density":55,"workingage":48.07},{"area":"竹原市","population":24810,"density":210,"workingage":49.67},{"area":"西区","population":188269,"density":5278,"workingage":62.45},{"area":"廿日市市","population":108624,"density":222,"workingage":56.03},{"area":"東区","population":118564,"density":3011,"workingage":59.44},{"area":"東広島市","population":193972,"density":305,"workingage":62.39},{"area":"福山市","population":449415,"density":867,"workingage":56.73},{"area":"府中市","population":37551,"density":192,"workingage":51.4},{"area":"府中町","population":48855,"density":4675,"workingage":60.85},{"area":"南区","population":136628,"density":5237,"workingage":61.91},{"area":"三原市","population":92069,"density":195,"workingage":53.22},{"area":"三次市","population":51216,"density":66,"workingage":50.79},{"area":"安芸高田市","population":27800,"density":52,"workingage":48.52},{"area":"佐伯区","population":135877,"density":606,"workingage":57.85},{"area":"神石高原町","population":8210,"density":22,"workingage":41.45},{"area":"大崎上島町","population":6801,"density":157,"workingage":44.89},{"area":"中区","population":129810,"density":8462,"workingage":60.69}]},
+{"year":"2025","data":[{"area":"安芸太田町","population":4899,"density":14,"workingage":39.4},{"area":"安芸区","population":80350,"density":855,"workingage":59.03},{"area":"安佐北区","population":137502,"density":389,"workingage":53.14},{"area":"安佐南区","population":258016,"density":2201,"workingage":61.85},{"area":"江田島市","population":19860,"density":197,"workingage":47.91},{"area":"大竹市","population":24214,"density":308,"workingage":53.02},{"area":"尾道市","population":124937,"density":439,"workingage":52.89},{"area":"海田町","population":26363,"density":1909,"workingage":61.05},{"area":"北広島町","population":16572,"density":26,"workingage":49.25},{"area":"熊野町","population":21789,"density":648,"workingage":53.47},{"area":"呉市","population":201752,"density":570,"workingage":55.31},{"area":"坂町","population":12922,"density":825,"workingage":57.5},{"area":"庄原市","population":31725,"density":25,"workingage":46.22},{"area":"世羅町","population":14032,"density":50,"workingage":46.9},{"area":"竹原市","population":22847,"density":193,"workingage":49.08},{"area":"西区","population":186260,"density":5222,"workingage":61.89},{"area":"廿日市市","population":104703,"density":214,"workingage":54.37},{"area":"東区","population":115896,"density":2943,"workingage":58.7},{"area":"東広島市","population":193755,"density":305,"workingage":62.21},{"area":"福山市","population":437777,"density":845,"workingage":56.26},{"area":"府中市","population":34950,"density":179,"workingage":50.59},{"area":"府中町","population":47538,"density":4549,"workingage":60.46},{"area":"南区","population":133915,"density":5133,"workingage":61.51},{"area":"三原市","population":87276,"density":185,"workingage":52.61},{"area":"三次市","population":48401,"density":62,"workingage":50.02},{"area":"安芸高田市","population":25957,"density":48,"workingage":47.76},{"area":"佐伯区","population":134016,"density":597,"workingage":56.57},{"area":"神石高原町","population":7267,"density":19,"workingage":40},{"area":"大崎上島町","population":6100,"density":141,"workingage":46.25},{"area":"中区","population":127209,"density":8293,"workingage":59.49}]},
+{"year":"2030","data":[{"area":"安芸太田町","population":4276,"density":12,"workingage":38.87},{"area":"安芸区","population":79375,"density":844,"workingage":58.53},{"area":"安佐北区","population":130880,"density":370,"workingage":52.6},{"area":"安佐南区","population":261582,"density":2232,"workingage":61.88},{"area":"江田島市","population":17715,"density":175,"workingage":48.18},{"area":"大竹市","population":22508,"density":286,"workingage":52.68},{"area":"尾道市","population":117550,"density":413,"workingage":53.39},{"area":"海田町","population":25370,"density":1837,"workingage":60.92},{"area":"北広島町","population":15515,"density":24,"workingage":49.62},{"area":"熊野町","population":20433,"density":608,"workingage":54.49},{"area":"呉市","population":188206,"density":532,"workingage":55.77},{"area":"坂町","population":12681,"density":809,"workingage":57.98},{"area":"庄原市","population":29152,"density":23,"workingage":46.85},{"area":"世羅町","population":12985,"density":47,"workingage":46.85},{"area":"竹原市","population":20890,"density":177,"workingage":48.72},{"area":"西区","population":183137,"density":5134,"workingage":60.91},{"area":"廿日市市","population":100168,"density":205,"workingage":53.51},{"area":"東区","population":112534,"density":2858,"workingage":57.43},{"area":"東広島市","population":192593,"density":303,"workingage":61.75},{"area":"福山市","population":423608,"density":818,"workingage":56.15},{"area":"府中市","population":32329,"density":165,"workingage":50.06},{"area":"府中町","population":45971,"density":4399,"workingage":59.35},{"area":"南区","population":130399,"density":4998,"workingage":60.72},{"area":"三原市","population":82355,"density":175,"workingage":52.48},{"area":"三次市","population":45646,"density":59,"workingage":50.09},{"area":"安芸高田市","population":24208,"density":45,"workingage":47.86},{"area":"佐伯区","population":131120,"density":584,"workingage":55.42},{"area":"神石高原町","population":6455,"density":17,"workingage":39.21},{"area":"大崎上島町","population":5457,"density":126,"workingage":48.12},{"area":"中区","population":123707,"density":8064,"workingage":58.6}]},
+{"year":"2035","data":[{"area":"安芸太田町","population":3723,"density":11,"workingage":39.11},{"area":"安芸区","population":77987,"density":830,"workingage":57.02},{"area":"安佐北区","population":123397,"density":349,"workingage":51.49},{"area":"安佐南区","population":263999,"density":2252,"workingage":60.14},{"area":"江田島市","population":15681,"density":155,"workingage":48.05},{"area":"大竹市","population":20781,"density":264,"workingage":50.95},{"area":"尾道市","population":110103,"density":387,"workingage":53.45},{"area":"海田町","population":24274,"density":1758,"workingage":59.43},{"area":"北広島町","population":14505,"density":22,"workingage":49.29},{"area":"熊野町","population":19001,"density":565,"workingage":53.42},{"area":"呉市","population":174794,"density":494,"workingage":55.28},{"area":"坂町","population":12412,"density":792,"workingage":57.37},{"area":"庄原市","population":26810,"density":22,"workingage":47.32},{"area":"世羅町","population":12010,"density":43,"workingage":47.44},{"area":"竹原市","population":18969,"density":160,"workingage":47.76},{"area":"西区","population":178986,"density":5018,"workingage":58.97},{"area":"廿日市市","population":95048,"density":194,"workingage":52.23},{"area":"東区","population":108569,"density":2757,"workingage":55.52},{"area":"東広島市","population":190147,"density":299,"workingage":60.6},{"area":"福山市","population":407364,"density":786,"workingage":55.26},{"area":"府中市","population":29738,"density":152,"workingage":49.11},{"area":"府中町","population":44203,"density":4230,"workingage":57.66},{"area":"南区","population":126248,"density":4839,"workingage":58.91},{"area":"三原市","population":77292,"density":164,"workingage":51.9},{"area":"三次市","population":42967,"density":55,"workingage":49.6},{"area":"安芸高田市","population":22503,"density":42,"workingage":47.51},{"area":"佐伯区","population":127275,"density":567,"workingage":53.97},{"area":"神石高原町","population":5742,"density":15,"workingage":39.43},{"area":"大崎上島町","population":4874,"density":113,"workingage":49.51},{"area":"中区","population":119283,"density":7776,"workingage":56.61}]},
+{"year":"2040","data":[{"area":"安芸太田町","population":3227,"density":9,"workingage":37.53},{"area":"安芸区","population":76325,"density":812,"workingage":54.47},{"area":"安佐北区","population":115433,"density":327,"workingage":48.88},{"area":"安佐南区","population":265489,"density":2265,"workingage":56.69},{"area":"江田島市","population":13816,"density":137,"workingage":46.79},{"area":"大竹市","population":19080,"density":243,"workingage":47.95},{"area":"尾道市","population":102790,"density":361,"workingage":52.16},{"area":"海田町","population":23116,"density":1674,"workingage":56.49},{"area":"北広島町","population":13527,"density":21,"workingage":47.48},{"area":"熊野町","population":17651,"density":525,"workingage":50.58},{"area":"呉市","population":161954,"density":458,"workingage":53.23},{"area":"坂町","population":12135,"density":774,"workingage":54.89},{"area":"庄原市","population":24553,"density":20,"workingage":46.78},{"area":"世羅町","population":11053,"density":40,"workingage":46.84},{"area":"竹原市","population":17109,"density":145,"workingage":45.68},{"area":"西区","population":173814,"density":4873,"workingage":55.74},{"area":"廿日市市","population":89410,"density":183,"workingage":49.91},{"area":"東区","population":104157,"density":2645,"workingage":52.74},{"area":"東広島市","population":186490,"density":294,"workingage":58.33},{"area":"福山市","population":389797,"density":752,"workingage":52.7},{"area":"府中市","population":27238,"density":139,"workingage":46.75},{"area":"府中町","population":42350,"density":4053,"workingage":54.91},{"area":"南区","population":121451,"density":4655,"workingage":55.72},{"area":"三原市","population":72176,"density":153,"workingage":49.8},{"area":"三次市","population":40303,"density":52,"workingage":47.67},{"area":"安芸高田市","population":20831,"density":39,"workingage":45.78},{"area":"佐伯区","population":122645,"density":547,"workingage":51.11},{"area":"神石高原町","population":5082,"density":13,"workingage":38.29},{"area":"大崎上島町","population":4378,"density":101,"workingage":49.91},{"area":"中区","population":114096,"density":7438,"workingage":53.11}]}
+];
+
+};
+
+
+		</script>
+
+
+		<div id="copy">
+			<p>データ引用元：<a href="http://www.toukei.metro.tokyo.jp/juukiy/jy-index.htm" target="_blank"　rel="nofollow">東京都の統計「住民基本台帳による東京都の世帯と人口」</a></p>
+			<p>D3.js公式サイト：<a href="http://d3js.org/" target="_blank"　rel="nofollow">D3.js - Data-Driven Documents</a></p>
+  	</div>
+  	</div>
+
+	</body>
+</html>

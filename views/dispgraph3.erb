@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!--meta http-equiv="X-UA-Compatible" content="IE=7" /-->
+<meta http-equiv="cache-control" content="no-cache" />
+<meta charset="utf-8" />
+
+<title>グラフ表示テスト(県別人口)</title>
+
+<script type="text/ecmascript" src="/js/jquery-1.11.2.min.js"></script> 
+
+<script language="javascript" type="text/javascript" src="/js/jquery.jqplot.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.barRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.canvasTextRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/plugins/jqplot.json2.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/jquery.jqplot.min.css" />
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $.ajax({
+    type: 'GET',
+    url: '/estat03/',
+    dataType: 'json',
+    async: false,
+    success: function(data, textStatus) {
+ //       $("p").text("Data Success: " + JSON.parse(data));
+ //$("p").text(JSON.parse(data));
+        var line1 = data.popData;
+        var xticks = data.labelTitle;
+ //       var xticks = [[0, '12時'], [1, '13時'], [2, '14時'], [3, '15時'], [4, '16時'], [5, '17時'], [6, '18時']];
+        var yticks =  [0, 2500000, 5000000, 7500000, 10000000,12500000, 15000000];
+        var jqplot = $.jqplot('plotGraf', [line1], {
+            legend: {show:true}, 
+            title: '県別人口',
+            grid: {background:'#f3f3f3', gridLineColor:'#accf9b'},
+            series: [
+                {label:'人口', yaxis:'yaxis'}
+            ],
+            seriesDefaults: {
+                renderer: $.jqplot.BarRenderer,
+                rendererOptions: {
+                	barPadding: 10,
+                	barMargin: 5,
+                	barDirection: 'vertical',
+                	barWidth: 15,
+				}
+            },
+            axes: {
+                xaxis:{
+ //               	renderer: $.jqplot.CategoryAxisRenderer,
+                	ticks:xticks, 
+                	tickRenderer: $.jqplot.CanvasAxisTickRenderer,  
+					tickOptions: {  
+         				angle: 90  
+        			}  
+                }, 
+                yaxis:{ticks:yticks, tickOptions:{formatString:'%d'}}
+            }
+        });
+    },
+    error: function() {
+        console.log('error');
+    }
+  });
+});
+</script>
+</head>
+
+<body>
+<div id="plotGraf" style="height: 300px; width: 1000px;"></div>
+<p></p>
+</body>
+</html>

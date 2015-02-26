@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=7" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta charset="utf-8" />
+
+<title>データ表示テスト</title>
+<script type="text/ecmascript" src="/js/jquery-1.11.2.min.js"></script> 
+<script type="text/ecmascript" src="/js/jquery.jqGrid.min.js"></script>
+    <script type="text/ecmascript" src="/js/grid.locale-ja.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="/css/ui.jqgrid.css" />
+
+</head>
+<body>
+ <table id="jqGrid"></table>
+ <div id="jqGridPager"></div>
+    <script type="text/javascript"> 
+        $(document).ready(function () {
+            $("#jqGrid").jqGrid({
+                url: '/estat01/',
+                mtype: "GET",
+                datatype: "json",
+                colModel: [
+                    { label: '@cat01', name: '@cat01', width: 75 },
+                    { label: '@cat02', name: '@cat02', width: 75 },
+                    { label: '@cat03', name: '@cat03', width: 75 },
+                    { label: '@cat04', name: '@cat04', width: 75 },
+                    { label: '@cat05', name: '@cat05', width: 75 },
+                    { label: '@area', name: '@area', width: 100 },
+                    { label: '@time', name: '@time', width: 100 },
+                    { label: '@unit', name: '@unit', width: 100 }
+                ],
+				viewrecords: true,
+                width: 780,
+                height: 250,
+                rowNum: 5000,
+                pager: "#jqGridPager"
+            });
+        });
+ 
+   </script>
+
+</body>
+</html>
