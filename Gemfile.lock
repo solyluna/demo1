@@ -1,15 +1,34 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.3.7)
     backports (3.6.4)
+    excon (0.44.3)
+    heroku (3.27.1)
+      heroku-api (~> 0.3.19)
+      launchy (>= 0.3.2)
+      multi_json (~> 1.10.1)
+      netrc (>= 0.10.0)
+      rest-client (= 1.6.7)
+      rubyzip (= 0.9.9)
+    heroku-api (0.3.22)
+      excon (~> 0.38)
+      multi_json (~> 1.8)
     json (1.8.1)
+    launchy (2.4.3)
+      addressable (~> 2.3)
+    mime-types (2.4.3)
     multi_json (1.10.1)
+    netrc (0.10.3)
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
     rake (10.4.2)
+    rest-client (1.6.7)
+      mime-types (>= 1.16)
+    rubyzip (0.9.9)
     sinatra (1.4.5)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -29,6 +48,7 @@ PLATFORMS
   x64-mingw32
 
 DEPENDENCIES
+  heroku
   json
   rake
   sinatra
