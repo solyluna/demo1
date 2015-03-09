@@ -18,10 +18,6 @@ get '/menu/' do
   erb :menu
 end
 
-get '/map' do
-  erb :blank_t
-end
-
 get '/dispdata/' do
   erb :dispdata
 end
@@ -273,8 +269,12 @@ get '/member/:name' do
   data.to_json
 end
 
-get '/d3test/' do
+get '/d3demo/' do
   erb :d3jsdemo
+end
+
+get '/japan_map_demo/' do
+  erb :japan_map_demo
 end
 
 #起動方法

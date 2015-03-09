@@ -57,19 +57,20 @@
 
 </head>
 <body>
+<center><h3>広島県の今後の人口推計（市区町別）</h3></center>
 	<div id="content">
 <!-- Standard button -->
 	<div id="yearlist">
-		<button type="button" class="btn btn-default" data-no="0" id="bt">2010年</button>
-		<button type="button" class="btn btn-default" data-no="1" id="bt">2015年</button>
-		<button type="button" class="btn btn-default" data-no="2" id="bt">2020年</button>
-		<button type="button" class="btn btn-default" data-no="3" id="bt">2025年</button>
-		<button type="button" class="btn btn-default" data-no="4" id="bt">2030年</button>
-		<button type="button" class="btn btn-default" data-no="3" id="bt">2035年</button>
-		<button type="button" class="btn btn-default" data-no="4" id="bt">2040年</button>
+		<button type="button" class="btn btn-info" data-no="0" id="bt">2010年</button>
+		<button type="button" class="btn btn-info" data-no="1" id="bt">2015年</button>
+		<button type="button" class="btn btn-info" data-no="2" id="bt">2020年</button>
+		<button type="button" class="btn btn-info" data-no="3" id="bt">2025年</button>
+		<button type="button" class="btn btn-info" data-no="4" id="bt">2030年</button>
+		<button type="button" class="btn btn-info" data-no="3" id="bt">2035年</button>
+		<button type="button" class="btn btn-info" data-no="4" id="bt">2040年</button>
 	</div>
 
-	<h2>2010年</h2>
+	<h3>2010年</h3>
 
 	<svg></svg>
 
@@ -78,7 +79,7 @@
 
 	// Width and height
 	var w = 1000;
-	var h = 600;
+	var h = 550;
 	var padding = 50; //グラフ内の余白
 
 	var nvdataset = [];
@@ -372,6 +373,24 @@ function scalexx(){
 		  .text("齢")
 		  .attr("x", -45)
 		  .attr("y", h/2+45)
+
+		d3.select(".y.axis")
+		  .append("text")
+		  .text("比")
+		  .attr("x", -45)
+		  .attr("y", h/2+60)
+
+		d3.select(".y.axis")
+		  .append("text")
+		  .text("率")
+		  .attr("x", -45)
+		  .attr("y", h/2+75)
+
+		d3.select(".y.axis")
+		  .append("text")
+		  .text("％")
+		  .attr("x", -45)
+		  .attr("y", h/2+90)
 		};
 
 
@@ -394,8 +413,7 @@ function scalexx(){
 
 
 		<div id="copy">
-			<p>データ引用元：<a href="http://www.toukei.metro.tokyo.jp/juukiy/jy-index.htm" target="_blank"　rel="nofollow">東京都の統計「住民基本台帳による東京都の世帯と人口」</a></p>
-			<p>D3.js公式サイト：<a href="http://d3js.org/" target="_blank"　rel="nofollow">D3.js - Data-Driven Documents</a></p>
+			<p>データ参照元：国立社会保障・人口問題研究所の『日本の地域別将来推計人口（平成25年3月推計）』</p>
   	</div>
   	</div>
 
