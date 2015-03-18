@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<title>総務省 家計調査 １世帯当たり品目別年間支出</title>
+<title>自家用乗用車の世帯当たり普及台数</title>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="Content-Style-Type" content="text/css">
@@ -11,21 +11,23 @@
 <!--script type="text/javascript" src="/js/canvas-toBlob.js"></script-->
 <!--script type="text/javascript" src="/js/FileSaver.js"></script-->
 <script type="text/javascript" src="/js/JapanSampleMap.js"></script>
+<!-- Bootstrap -->
+<link href="/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body style="margin:0px;" onload="setSVG()">
-  <div id="top_bar" style="background-color:#003333;padding:10px;">
+  <div id="top_bar" style="background-color:#DDDDDD;padding:10px;">
   <form id="f_paintmenu" name="f_paintmenu">
   <table>
   <tr>
-    <th class="map_title" id="map_title" name="map_title" style="font-size: 16px;color: #FFFFFF;">総務省 家計調査 １世帯当たり品目別年間支出</td>
-    <td style="font-size:12px;color:#FFFFFF;padding-left:20px;">品目：
-        <select id="f_item" name="f_item" style="width:180px;font-size:12px;" onchange="paintPrefConsume(this.value)">
-        </select>
-    </td>
-    <td style="padding-left:10px;" id="footer">
-       <input type="button"  style="width:160px;font-size:14px;" onclick="SaveMapImage()" value="地図を画像として保存">
-    </td>
+    <th class="map_title" id="map_title" name="map_title" style="font-size: 16px;color: #FFFFFF;"></td>
+<input type="button" class="btn btn-default" value="Menu" onClick="location.href='/menu/'"></td>
+<td width=100></td>
+<td><h4><b>自家用乗用車の世帯当たり普及台数　　</b></h4></td>
+<td><input type="button" class="btn btn-success" value="保有台数" onClick="paintPrefConsume('1')"></td>
+<td width=5></td>
+<td><input type="button" class="btn btn-warning" value="世帯当り台数" onClick="paintPrefConsume('2')"></td>
+
   </tr>
   </table>
   </form>

@@ -79,8 +79,8 @@
               if (CurItem > 0) {
                  prefCenter = mapPath.projection()(d3.geo.centroid(d));
                  curPref = parseInt(d3.select(this).attr("prefcode"));
-                 curText = d.properties["prefname"]+" "+formatCurrency(consumePref[CurItem][curPref]["Amount"]);
-                 SetTooltip(mapPath.projection()(d3.geo.bounds(d)[1]),curText);
+           //      curText = d.properties["prefname"]+" "+formatCurrency(consumePref[CurItem][curPref]["Amount"]);
+                 curText = d.properties["prefname"]+" "+consumePref[CurItem][curPref]["Amount"];                 SetTooltip(mapPath.projection()(d3.geo.bounds(d)[1]),curText);
               }
            })
            .on('mouseout', function() {
@@ -93,9 +93,9 @@
 
         drawOkinawaLine(mapPath.projection(),5,15);
 
-        d3.csv(itemFileName, function(error, idata){
-           setItemOption(idata);
-        });
+//        d3.csv(itemFileName, function(error, idata){
+//           setItemOption(idata);
+//        });
 
         d3.csv(consumeFileName, function(error, cdata){
            cdata.forEach(function(d, i){
@@ -331,7 +331,7 @@
        })
 
     var fontsize = 14;
-    var dataText = ["消費金額 多","消費金額 少"]
+    var dataText = ["台数 多い","台数 少ない"]
     var LegendText = d3.select("svg")
        .selectAll(".legendtext")
        .data(dataText)
@@ -386,19 +386,20 @@
 
      var mapTitle;
      var titleText = new Array();
-     var titleHeader ="総務省 家計調査 １世帯当たり品目別年間支出";
+     var titleHeader ="自家用乗用車の世帯当たり普及台数(平成26年3月末現在)";
      var itemName;
      var itemYear;
 
-     d3.select("#f_item").selectAll("option")
-        .each(function(d) {
-           if (this.value == CurItem) {
-              itemName = this.innerHTML;
-              itemYear = d3.select(this).attr("year");
-           }
-        });
+//     d3.select("#f_item").selectAll("option")
+//        .each(function(d) {
+//           if (this.value == CurItem) {
+//              itemName = this.innerHTML;
+//              itemYear = d3.select(this).attr("year");
+//           }
+//        });
 
-     titleText = [titleHeader+" （"+itemYear+"）",itemName]
+//     titleText = [titleHeader+" （"+itemYear+"）",itemName]
+     titleText = [titleHeader,itemName]
 
      mapTitle = d3.select("svg")
        .selectAll(".maptitle")
